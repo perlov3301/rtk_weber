@@ -2,7 +2,7 @@ import React, { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
 // import App from './App.js';
 import './index.css';
-import {createApi} from '@reduxjs/toolkit/query/react';
+import {createApi, ApiProvider} from '@reduxjs/toolkit/query/react';
 
 
 // data copy & pasted from https://pokeapi.co/api/v2/pokemon?limit=9
@@ -11,7 +11,7 @@ const fakePokemonListing = {
     next: "https://pokeapi.co/api/v2/pokemon?offset=9&limit=9",
     previous: null,
     results: [
-        { name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1/",i:"1" },
+        { name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1/",i:1 },
         { name: "ivysaur", url: "https://pokeapi.co/api/v2/pokemon/2/",i:"2" },
         { name: "venusaur", url: "https://pokeapi.co/api/v2/pokemon/3/",i:"3" },
         { name: "charmander", url: "https://pokeapi.co/api/v2/pokemon/4/",i:"4" },
@@ -48,16 +48,22 @@ const fakePokemonDetailData = {
     },
 };
 
+function simulateLoading() {
+  return new Promise((resolve)=> setTimeout(resolve, 500));
+}
+
 const api= createApi({
   baseQuery: ()=> {},
   endpoints: build=> ({
     pokemonList: build.query({
-      queryFn(){
+      async queryFn(){
+        await simulateLoading();
         return {data: fakePokemonListing }
       }
     }),
     pokemonDetail: build.query({
-      queryFn(){
+      async queryFn(){
+        await simulateLoading();
         return {data: fakePokemonDetailData }
       }
     }),
@@ -86,7 +92,7 @@ function App() {
         <main>
           {selectedPokemon ? (
             <>
-              <PokemonDetails pokemonName={selectedPokemon} />
+              <PokemonDetails i={selectedPokemon.i} />
               <button className="button_back"
                   onClick={()=> selectPokemon(undefined)}>
                 back
@@ -100,47 +106,56 @@ function App() {
     );
   }
 function PokemonList({ onPokemonSelected }) {
-    const data= fakePokemonListing;
+    const {data, isLoading, isError, isSuccess } = usePokemonListQuery();
+    if (isLoading) { return "loading" }
+    if (isError) { return "something went wrong" }
+    if (isSuccess) {
+      return (
+        <article>
+          <h2>Overwiev</h2>
+          <ol start={1}>
+            {data.results.map((pokemon)=> (
+              <li key={pokemon.name}>
+                {/* <button onClick={()=> onPokemonSelected(pokemon.i)}> */}
+                <button onClick={()=> onPokemonSelected(pokemon.i)}>
+                  {pokemon.name}
+                </button>
+              </li>
+            ))}
+          </ol>
+        </article>
+      );
+    }
 
-    return (
-      <article>
-        <h2>Overwiev</h2>
-        <ol start={1}>
-          {data.results.map((pokemon)=> (
-            <li key={pokemon.name}>
-              {/* <button onClick={()=> onPokemonSelected(pokemon.i)}> */}
-              <button onClick={()=> onPokemonSelected(pokemon.name)}>
-                {pokemon.name}
-              </button>
-            </li>
-          ))}
-        </ol>
-      </article>
-    );
+    
 }
 const listFormatter= new Intl.ListFormat("en-GB", {
     style: "short",
     type: "conjunction"
   });
-function PokemonDetails({ pokemonName }) {// try i
-    const data= fakePokemonDetailData;
-    console.log(`indexjs: i=${i}`)
+function PokemonDetails({ i }) {// try i
+  const { data, isLoading, isError, isSuccess }= usePokemonDetailQuery();
+    if (isLoading ) { return "loading..."; }
+    if (isError ) {return "something went wrong"; }
+    if (isSuccess) {
     const url_i= data.img_url.base_url + 9+'.png';
-    return (
-      <article>
-        <h2>{data.name} </h2>
-        {/* <img src={url_i} alt={data.name} /> */}
-        <img src={data.sprites.front_default } alt={data.name} />
-        <ul>
-          <li>id: {data.id} </li>
-          <li>height: {data.height} </li>
-          <li>weight: {data.weight} </li>
-          <li> types:
-            {listFormatter.format(data.types.map(
-              (item)=> item.type.name
-            ))}
-          </li>
-        </ul>
-      </article>
-    );
+
+      return (
+        <article>
+          <h2>{data.name} </h2>
+          <img src={url_i} alt={data.name} />
+          {/* <img src={data.sprites.front_default } alt={data.name} /> */}
+          <ul>
+            <li>id: {data.id} </li>
+            <li>height: {data.height} </li>
+            <li>weight: {data.weight} </li>
+            <li> types:
+              {listFormatter.format(data.types.map(
+                (item)=> item.type.name
+              ))}
+            </li>
+          </ul>
+        </article>
+      );
+    }
 }
