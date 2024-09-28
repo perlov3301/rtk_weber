@@ -63,9 +63,9 @@ const api= createApi({
           }
       }),
     pokemonDetail: build.query({
-        async queryFn(){ 
+        async queryFn({name}){ 
             const result= await fetch(
-              "https://pokeapi.co/api/v2/pokemon/8/" );
+              `https://pokeapi.co/api/v2/pokemon/${name}/` );
             if (result.ok) {
                  const data= await result.json();
                  return {data }; 
@@ -147,7 +147,7 @@ const listFormatter= new Intl.ListFormat("en-GB", {
   });
 function PokemonDetails({ pokemonName }) {
   const {data, isLoading, isError, isSuccess}= 
-    usePokemonDetailQuery() ;
+    usePokemonDetailQuery({name: pokemonName}) ;
   if (isLoading) {return "loading..."; }
   if (isError) {return "something went wrong"; }
   if (isSuccess) {
