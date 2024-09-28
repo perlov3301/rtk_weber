@@ -42,15 +42,37 @@ const fakePokemonDetailData = {
       "https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/1.png",
   },
 };
+function simulateaLoading() {
+  return new Promise(
+    (resolve)=> setTimeout(resolve, 500));
+}
 
 const api= createApi({
   baseQuery: ()=> {},
   endpoints: build=> ({
     pokemonList: build.query({
-        queryFn(){ return {data: fakePokemonListing}}
+        async queryFn(){ 
+         const result= await fetch(
+            "https://pokeapi.co/api/v2/pokemon?limit=9");
+          if (result.ok) {
+              const data= await result.json();
+              return {data };
+            } else {
+              return {error: "something went wrong in List"};
+            }
+          }
       }),
     pokemonDetail: build.query({
-        queryFn(){ return {data: fakePokemonDetailData}}
+        async queryFn(){ 
+            const result= await fetch(
+              "https://pokeapi.co/api/v2/pokemon/8/" );
+            if (result.ok) {
+                 const data= await result.json();
+                 return {data }; 
+              } else {
+                 return {error: "something went wrong in Detail"};
+                }
+          }
       }),
   }),
 });
@@ -98,7 +120,7 @@ function PokemonList({ onPokemonSelected }) {
    const {data, isLoading, isError, isSuccess}= 
       usePokemonListQuery();
    if (isLoading) {return "loading..."; }
-   if (isError) {return "something went wrong"; }
+   if (isError) {return "something went wrong in data of PokemonList"; }
    if (isSuccess) {
     return (
       <article>
@@ -148,37 +170,3 @@ function PokemonDetails({ pokemonName }) {
     }
  
 }
-/**
- return (
-        <article>
-          <h2>Overwiev</h2>
-          <ol start={1}>
-            {data.results.map((pokemon)=> (
-              <li key={pokemon.name}>
-                <button onClick={()=> 
-                     onPokemonSelected(pokemon.name)}>
-                  {pokemon.name}
-                </button>
-              </li>
-            ))}
-          </ol>
-        </article>
-      );
-
-       return (
-    <article>
-      <h2>{data.name} </h2>
-      <img src={data.sprites.front_default } alt={data.name} />
-      <ul>
-        <li>id: {data.id} </li>
-        <li>height: {data.height} </li>
-        <li>weight: {data.weight} </li>
-        <li> types:
-          {listFormatter.format(data.types.map(
-            (item)=> item.type.name
-          ))}
-        </li>
-      </ul>
-    </article>
-  );
- */
