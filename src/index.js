@@ -10,15 +10,15 @@ const fakePokemonListing = {
     next: "https://pokeapi.co/api/v2/pokemon?offset=9&limit=9",
     previous: null,
     results: [
-        { name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1/",},
-        { name: "ivysaur", url: "https://pokeapi.co/api/v2/pokemon/2/", },
-        { name: "venusaur", url: "https://pokeapi.co/api/v2/pokemon/3/", },
-        { name: "charmander", url: "https://pokeapi.co/api/v2/pokemon/4/",},
-        { name: "charmeleon", url: "https://pokeapi.co/api/v2/pokemon/5/",},
-        { name: "charizard", url: "https://pokeapi.co/api/v2/pokemon/6/",},
-        { name: "squirtle", url: "https://pokeapi.co/api/v2/pokemon/7/",},
-        { name: "wartortle", url: "https://pokeapi.co/api/v2/pokemon/8/",},
-        { name: "blastoise", url: "https://pokeapi.co/api/v2/pokemon/9/",},
+        { name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1/",i:1},
+        { name: "ivysaur", url: "https://pokeapi.co/api/v2/pokemon/2/", i:2},
+        { name: "venusaur", url: "https://pokeapi.co/api/v2/pokemon/3/",i:3 },
+        { name: "charmander", url: "https://pokeapi.co/api/v2/pokemon/4/",i:4},
+        { name: "charmeleon", url: "https://pokeapi.co/api/v2/pokemon/5/",i:5},
+        { name: "charizard", url: "https://pokeapi.co/api/v2/pokemon/6/",i:6},
+        { name: "squirtle", url: "https://pokeapi.co/api/v2/pokemon/7/",i:7},
+        { name: "wartortle", url: "https://pokeapi.co/api/v2/pokemon/8/",i:8},
+        { name: "blastoise", url: "https://pokeapi.co/api/v2/pokemon/9/",i:9},
     ],
 };
 //partial data of https://pokeapi.co/api/v2/pokemon/1/
@@ -63,9 +63,9 @@ const api= createApi({
           }
       }),
     pokemonDetail: build.query({
-        async queryFn({name}){ 
+        async queryFn({i}){ 
             const result= await fetch(
-              `https://pokeapi.co/api/v2/pokemon/${name}/` );
+              `https://pokeapi.co/api/v2/pokemon/${i}/` );
             if (result.ok) {
                  const data= await result.json();
                  return {data }; 
@@ -103,7 +103,7 @@ function App() {
         <main>
           {selectedPokemon ? (
             <>
-              <PokemonDetails pokemonName={selectedPokemon} />
+              <PokemonDetails pokemonNumber={selectedPokemon} />
               <button className="button_back"
                   onClick={()=> selectPokemon(undefined)}>
                 back
@@ -145,9 +145,9 @@ const listFormatter= new Intl.ListFormat("en-GB", {
     style: "short",
     type: "conjunction"
   });
-function PokemonDetails({ pokemonName }) {
+function PokemonDetails({ pokemonNumber }) {
   const {data, isLoading, isError, isSuccess}= 
-    usePokemonDetailQuery({name: pokemonName}) ;
+    usePokemonDetailQuery({i: pokemonNumber}) ;
   if (isLoading) {return "loading..."; }
   if (isError) {return "something went wrong"; }
   if (isSuccess) {
